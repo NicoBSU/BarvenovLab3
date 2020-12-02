@@ -8,14 +8,30 @@ let arr=[{name:"Nikolai",
           averageMark:6}];
 //Counter. Поскольку нулевой элемент массива уже мы заняли по умолчанию, мы начнем с первого
 let counter=1;
+let sum;
+let n;
 
 $(document).ready(function() {
 //По нажатию на кнопку переходим в editMode
-    $(".editButton").click(function(){
+   $("#studentList").click(function(ev){
+    let self = $(ev.target);
+    if (!self.hasClass('editButton') && !self.hasClass('deleteButton')) {
+        return false;
+    }
+    if (self.hasClass('deleteButton')){
+        editMode=false;
+        let row=self.parent().parent();
+        let index=row.index();
+        row.remove();
+        counter--;
+        arr.splice(index,1);
+    }
+    if(self.hasClass('editButton')){
+    let tr = self.parent().parent();
         //Делаем выбранный ряд серым
-        $(this).parent().parent().css('background-color','#CCCCCC');
+        tr.css('background-color','#CCCCCC');
         editMode=true;
-        editIndex=$(this).parent().parent().index();
+        editIndex=tr.index();
 
         $("#name").val(arr[editIndex].name);
         $("#surname").val(arr[editIndex].surname);
@@ -23,8 +39,8 @@ $(document).ready(function() {
         $("#averageMark").val(arr[editIndex].averageMark);
 
         $('.add-row').val('Edit');
-        console.log(editMode);
-        });
+      }
+   });
     //Форма добавления/редактирования
     $(".add-row").click(function submitForm(){
         if(!editMode){
@@ -35,16 +51,11 @@ $(document).ready(function() {
             arr[counter].age = $("#age").val();
             arr[counter].averageMark = $("#averageMark").val();
             //Создаем макет, по которому добавим теги в tbody
-//!!! Я добавляю элемент markup. Я много раз проверял но так и не нашел ошибку. Здесь я добавляю точно <tr></tr> с пятью тегами <td> внутри.Однако по какой-то причине выводится еще и 6 столбец.
-
-//!!! Также здесь у меня внутри первого столбца добавляются кнопка чекбокс и заскриптованная кнопка-изображение. У всех img класс=editButton, однако, ивент выше ($(.editButton).click()) работает только с первым элементом класса(написанным тегами в html по умолчанию)
-            let markup = `<tr><td><input type="checkbox" name="record"><img src="edit.png" alt="editButton" class="editButton" width="18px" height="18px"></td><td>` + arr[counter].name + "</td><td>" + arr[counter].surname + "</td><td>"+ arr[counter].age +"</td><td>"+ arr[counter].averageMark +"<td/></tr>";
+            let markup = `<tr><td><img src="delete.png" alt="deleteButton" class="deleteButton" width="20px" height="20px"><img src="edit.png" alt="editButton" class="editButton" width="20px" height="20px"></td><td>` + arr[counter].name + "</td><td>" + arr[counter].surname + "</td><td>"+ arr[counter].age +"</td><td>"+ arr[counter].averageMark +"</td></tr>";
             //Добавляем наш макетик
             $("table tbody").append(markup);
             //Увеличиваем counter массива
             counter++;
-            //Служебная информация. Отображаем массив в консоль для проверки
-            console.log(arr);
              }
         else
         {
@@ -54,36 +65,33 @@ $(document).ready(function() {
             arr[editIndex].surname = $("#surname").val();
             arr[editIndex].age = $("#age").val();
             arr[editIndex].averageMark = $("#averageMark").val();
-            //Выводим в консоль новые значения
-            console.log(arr[editIndex]);
             //Меняем значения строки
+        let tr = $($("#studentList").children()[editIndex]);
+        let tds = tr.children();
+            $(tds[1]).html(arr[editIndex].name);
+            $(tds[2]).html(arr[editIndex].surname);
+            $(tds[3]).html(arr[editIndex].age);
+            $(tds[4]).html(arr[editIndex].averageMark);
+            tr.css('background-color','#FFFFFF');
 
-//!!! Тут вообще я не понимаю. Я лазил по разным сайтам, читал документацию, использовал разные сочетания селекторов и функции (html,text,val). Элемент массива изменяется как надо, а вот код ниже, просто не находит нужные элементы DOM-дерева.
-            $("#studentList").children("tr:eq(editIndex)").children("td:eq(1)").html("arr[editIndex].name");
-            $("#studentList").children("tr:eq(editIndex)").children("td:eq(2)").html("arr[editIndex].surname");
-            $("#studentList").children("tr:eq(editIndex)").children("td:eq(3)").html("arr[editIndex].age");
-            $("#studentList").children("tr:eq(editIndex)").children("td:eq(4)").html("arr[editIndex].averageMark");
-
-            $("#studentList").children(":eq(editIndex)").css('background-color','#FFFFFF');
             //Обратно меняем на false
             editMode=false;
             //Обратно меняем текст кнопки на add row
             $('.add-row').val('Add row');
             };
         });
-//Удаление строки и элемента массива
-    $(".delete-row").click(function(){
-            editMode=false;
-            $("table tbody").find('input[name="record"]').each(function(){
-                if($(this).is(":checked")){
-                    let row=$(this).parent().parent();
-                    let index=row.index();
-                    $(this).parents("tr").remove();
-                    counter--;
-                    arr.splice(index,1);
-                    console.log(arr);
-                }
-            });
+    $('.find-average').click(function(){
+        sum=0;
+        n=0;
+        $("table tbody").find('tr').each(function(){
+            let tds=$(this).children();
+            sum+=Number(tds[4].innerHTML);
+            console.log(tds[4].innerHTML);
+            n++;
         });
+        if (n!=0) {sum=sum/n;}
+        $('#averageAmongAll').text(sum);
+    });
+
 });
 
